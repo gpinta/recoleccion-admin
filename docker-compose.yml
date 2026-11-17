@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recoleccion_admin
+    restart: unless-stopped
+
+    ports:
+      - "192.168.30.20:8081:8081"
+
+    environment:
+      APP_NAME: "Recolección Admin"
+      APP_KEY: ""
+      APP_DEBUG: "true"
+      APP_URL: http://admin-recoleccion.neltek.uy
+
+      DB_CONNECTION: mysql
+      DB_HOST: recoleccion_db
+      DB_PORT: 3306
+      DB_DATABASE: recoleccion
+      DB_USERNAME: recoleccion_user
+      DB_PASSWORD: recoleccion_password
+      
+      # URL pública de la Aplicación Ciudadana / API
+      API_PUBLIC_URL: http://recoleccion.neltek.uy
+
+      ADMIN_LDAP_ADMINS_GROUP_DN: "CN=GG_REC_Backend_Admins,OU=Aplicaciones,OU=Grupos,OU=RecoleccionUY,DC=neltek,DC=uy"
+      ADMIN_LDAP_OPERATORS_GROUP_DN: "CN=GG_REC_Backend_Operators,OU=Aplicaciones,OU=Grupos,OU=RecoleccionUY,DC=neltek,DC=uy"
+      ADMIN_LDAP_READERS_GROUP_DN: "CN=GG_REC_Backend_Readers,OU=Aplicaciones,OU=Grupos,OU=RecoleccionUY,DC=neltek,DC=uy"
+      
+      # Servidores LDAP / Active Directory
+      LDAP_HOSTS: "ws-dc-01.neltek.uy,ws-dc-02.neltek.uy"
+      LDAP_PORT: 389
+      LDAP_USERNAME: "CN=svc_recoleccion_ldap,OU=CuentasServicio,OU=RecoleccionUY,DC=neltek,DC=uy"
+      LDAP_PASSWORD: "Az123456789"
+      LDAP_BASE_DN: "DC=neltek,DC=uy"
+      LDAP_TIMEOUT: 5
+      LDAP_LOGGING: "true"
+
+      # Ruta que Laravel ve dentro del contenedor
+      # para las fotografías privadas de denuncias.
+      DENUNCIAS_PRIVATE_ROOT: /var/www/shared-denuncias
+
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+
+    volumes:
+      - /srv/recoleccion-data/fotos:/var/www/shared-denuncias:rw,z
+
+    networks:
+      - recoleccion-db-net
+
+networks:
+  recoleccion-db-net:
+    external: true
+    name: recoleccion-db-net
